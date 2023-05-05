@@ -66,11 +66,16 @@ app.post("/urls/:id/delete", (req, res) => {
 
 });
 
-// POSt (edit url);
- 
+// POST (edit url);
+
 app.post("/urls/:id/delete", (req, res) => {
   urlDatabase[id].longURL = req.body.newURL;
   res.redirect(`/urls`);
 });
 
-
+//POST (Login) 
+app.post("/login", (req, res) => {
+  req.session = null;
+  res.cookie("username")
+  res.redirect('/urls');
+});
