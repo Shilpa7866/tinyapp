@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
-  "54hyykn7":"https://www.icicibank.com"
+  "54hyykn7": "https://www.icicibank.com"
 };
 
 
@@ -52,7 +52,19 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   let longURL = "null";
-  console.log("user entered /u/:id:  "+req.params.id);
-  longURL=urlDatabase[req.params.id];
+  console.log("user entered /u/:id:  " + req.params.id);
+  longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
+
+//// POST (delete url):
+
+app.post("/urls/:id/delete", (req, res) => {
+
+  delete urlDatabase[req.params.id];
+  res.redirect('/urls');
+
+});
+
+
+
