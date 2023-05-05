@@ -66,5 +66,11 @@ app.post("/urls/:id/delete", (req, res) => {
 
 });
 
+// POSt (edit url);
+ 
+app.post("/urls/:id/delete", (req, res) => {
+  urlDatabase[id].longURL = req.body.newURL;
+  res.redirect(`/urls`);
+});
 
 
