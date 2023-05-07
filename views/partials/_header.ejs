@@ -12,7 +12,7 @@
       </div>
     </div>
 
-
+    
     <% if (username) { %>
       <form method="POST" action="/logout">
         <div>
@@ -25,8 +25,9 @@
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
               <input type="text" id="name" name="username">
-              <button type="submit" class="Login-btn">Login</button>
-              <a class="nav-item nav-link" href="/login"></a>
+              <button type="submit" class="btn btn-primary">Login</button>
+
+              <a href="/register" class="btn btn-primary">Register</a>
             </div>
           </div>
       </form>
