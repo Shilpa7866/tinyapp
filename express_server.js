@@ -36,7 +36,7 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 // adding GET route to show the form.
@@ -81,7 +81,7 @@ app.post("/login", (req, res) => {
   //req.session = null;
   console.log(req.body);
   res.cookie("username", req.body.username);
-     
+
   console.log(res.cookie);
   res.redirect('/urls');
 });
@@ -90,4 +90,12 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
+});
+
+//register form
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: null
+  };
+  res.render("register", templateVars);
 });
