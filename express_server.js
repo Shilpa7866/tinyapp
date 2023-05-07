@@ -86,20 +86,3 @@ app.post("/login", (req, res) => {
   res.redirect('/urls');
 });
 
-// GET (urls index page): shows urls that belong to the user, if they are logged in
- 
-/*app.get("/urls", (req, res) => {
-
-  //let username = console.log('Cookies: ', req.cookies);
-  //console.log('cookies',req.cookies);
-
-  const templateVars = {
-    urls: urlDatabase,
-    username: req.cookies["username"]
-  };
-  console.log(templateVars);
-  // res.render("urls_index", {name:req.cookies.username});
-
-  res.render("urls_index", templateVars);
-});
-*/
