@@ -86,3 +86,8 @@ app.post("/login", (req, res) => {
   res.redirect('/urls');
 });
 
+// POST (log out page): clears cookies, session and redirects to urls index page
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
