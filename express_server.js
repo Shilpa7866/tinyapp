@@ -1,4 +1,6 @@
 const express = require("express");
+const cookieParser = require('cookie-parser')
+
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -7,6 +9,7 @@ function generateRandomString() { }
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -33,7 +36,7 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 // adding GET route to show the form.
@@ -73,9 +76,30 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect(`/urls`);
 });
 
-//POST (Login) 
+//POST (Login)
 app.post("/login", (req, res) => {
-  req.session = null;
-  res.cookie("username")
+  //req.session = null;
+  console.log(req.body);
+  res.cookie("username", req.body.username);
+     
+  console.log(res.cookie);
   res.redirect('/urls');
 });
+
+// GET (urls index page): shows urls that belong to the user, if they are logged in
+ 
+/*app.get("/urls", (req, res) => {
+
+  //let username = console.log('Cookies: ', req.cookies);
+  //console.log('cookies',req.cookies);
+
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+  console.log(templateVars);
+  // res.render("urls_index", {name:req.cookies.username});
+
+  res.render("urls_index", templateVars);
+});
+*/
