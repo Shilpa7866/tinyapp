@@ -2,6 +2,7 @@ const express = require("express");
 const cookieParser = require('cookie-parser')
 const cookieSession = require("cookie-session"); 
 
+const getUserByEmail= require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -134,13 +135,31 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   console.log(email, password);
+  if (!email || !password) {
+    return res.status(400).send("Please enter valid email or password");
+  } 
+  if (getUserByEmail(email, users)) {
+    return res.status(400).send("Email already exist");
+  } 
   const id = generateRandomString(email.length);
   users[id] = {
     id,
     email: email,
     password: password
   };
-  console.log(users);
   req.session.user_id = id;
   res.redirect("/urls");
+});
+
+app.get("/login", (req, res) => {
+  const user = users[req.session["user_id"]];
+  if (user) {
+    // Redirect to the "/urls" page if the user is already logged in
+    return res.redirect("/urls");
+  }
+  const templateVars = {
+    user: null,
+  };
+  // Render the "login" template with the provided template variables
+  res.render("login", templateVars);
 });
