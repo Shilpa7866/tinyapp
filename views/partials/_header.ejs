@@ -13,10 +13,10 @@
     </div>
 
     
-    <% if (username) { %>
+    <% if (user) { %>
       <form method="POST" action="/logout">
         <div>
-          <label class="aria-label">Logged In As: <%= username %></label>
+          <label class="aria-label">Logged In As: <%= user.email %></label>
           <button type="submit" class="btn btn-primary">Logout</button>
         </div>
       </form>
@@ -24,10 +24,10 @@
         <form class="Login" action="/login" method="POST">
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-              <input type="text" id="name" name="username">
+              <input type="text" id="name" name="email">
               <button type="submit" class="btn btn-primary">Login</button>
 
-              <a href="/register" class="btn btn-primary">Register</a>
+              <!-- <a href="/register" class="btn btn-primary">Register</a> -->
             </div>
           </div>
       </form>
