@@ -1,15 +1,27 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
+const cookieSession = require("cookie-session"); 
 
 const app = express();
 const PORT = 8080; // default port 8080
 
-function generateRandomString() { }
+function generateRandomString(len) {
+  let generatedNumber = Math.random()
+    .toString(20)
+    .substr(2, `${len > 6 ? (len = 6) : (len = 6)}`);
+  return generatedNumber; 
+ }
 
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["key1", "key2"]
+  })
+); 
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -17,7 +29,18 @@ const urlDatabase = {
   "54hyykn7": "https://www.icicibank.com"
 };
 
-
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -36,7 +59,13 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  // const sessionId = req.session["user_id"];
+  const sessionId = req.session["user_id"]; 
+  console.log(sessionId);
+  if(!sessionId) return res.redirect("/register")
+  const user = users[sessionId];
+  if(!user) return res.redirect("/register");
+  const templateVars = { urls: urlDatabase, user};
   res.render("urls_index", templateVars);
 });
 // adding GET route to show the form.
@@ -49,13 +78,13 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
+  // console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:id", (req, res) => {
   let longURL = "null";
-  console.log("user entered /u/:id:  " + req.params.id);
+  // console.log("user entered /u/:id:  " + req.params.id);
   longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
@@ -88,14 +117,30 @@ app.post("/login", (req, res) => {
 
 // POST (log out page): clears cookies, session and redirects to urls index page
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  req.session["user_id"] = null;
+  // res.clearCookie("username");
   res.redirect("/urls");
 });
 
 //register form
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: null
+    user: users[res.cookie.user_id]
   };
   res.render("register", templateVars);
+});
+
+// Registration Handler
+app.post("/register", (req, res) => {
+  const { email, password } = req.body;
+  console.log(email, password);
+  const id = generateRandomString(email.length);
+  users[id] = {
+    id,
+    email: email,
+    password: password
+  };
+  console.log(users);
+  req.session.user_id = id;
+  res.redirect("/urls");
 });
