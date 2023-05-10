@@ -114,29 +114,47 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 //POST (Login)
+
 app.post("/login", (req, res) => {
-  //req.session = null;
-  console.log(req.body);
-  res.cookie("username", req.body.username);
-
-  console.log(res.cookie);
-  res.redirect('/urls');
+  // Get the email and password from the request body
+  const { email, password } = req.body;
+  // Find the user based on the email
+  const user = getUserByEmail(email, users);
+  if (!user) {
+    // Send a message if the email is not found
+    return res.status(403).send("Email not found");
+  }
+  if (!password, user.password) {
+    // Send a message if the password is incorrect
+    return res.status(403).send("Incorrect password");
+  }
+  req.session.user_id = id; // Store the user_id in the session
+  res.redirect("/urls"); // Redirect to the "/urls" page after successful login
 });
 
-// POST (log out page): clears cookies, session and redirects to urls index page
+
+// Handler logout
 app.post("/logout", (req, res) => {
-  req.session["user_id"] = null;
-  // res.clearCookie("username");
-  res.redirect("/urls");
+  req.session = null; // Clear the session
+  res.redirect("/login"); // Redirect to the "/login" page after logout
 });
 
-//register form
+
+// register route GET
 app.get("/register", (req, res) => {
+  // Get the user object based on the user_id stored in the session
+  const user = users[req.session["user_id"]];
+  if (user) {
+    // Redirect to the "/urls" page if the user is already logged in
+    return res.redirect("urls");
+  }
   const templateVars = {
-    user: users[res.cookie.user_id]
+    user: null,
   };
+  // Render the "register" template with the provided template variables
   res.render("register", templateVars);
 });
+
 
 // Registration Handler
 app.post("/register", (req, res) => {
@@ -158,6 +176,7 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
+//GET Login
 app.get("/login", (req, res) => {
   const user = users[req.session["user_id"]];
   if (user) {
