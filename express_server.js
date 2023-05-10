@@ -81,7 +81,12 @@ app.get("/urls/new", (req, res) => {
   
 });
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const sessionId = req.session["user_id"]; 
+  console.log(sessionId);
+  if(!sessionId) return res.redirect("/register")
+  const user = users[sessionId];
+  if(!user) return res.redirect("/register");
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user };
   res.render("urls_show", templateVars);
 });
 
@@ -124,11 +129,11 @@ app.post("/login", (req, res) => {
     // Send a message if the email is not found
     return res.status(403).send("Email not found");
   }
-  if (!password, user.password) {
+  if (password !== user.password) {
     // Send a message if the password is incorrect
     return res.status(403).send("Incorrect password");
   }
-  req.session.user_id = id; // Store the user_id in the session
+  req.session.user_id = user.id; // Store the user_id in the session
   res.redirect("/urls"); // Redirect to the "/urls" page after successful login
 });
 
@@ -172,6 +177,7 @@ app.post("/register", (req, res) => {
     email: email,
     password: password
   };
+  console.log(users);
   req.session.user_id = id;
   res.redirect("/urls");
 });
