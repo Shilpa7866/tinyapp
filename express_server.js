@@ -1,8 +1,8 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
-const cookieSession = require("cookie-session"); 
+const cookieSession = require("cookie-session");
 
-const getUserByEmail= require("./helpers");
+const getUserByEmail = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -10,8 +10,8 @@ function generateRandomString(len) {
   let generatedNumber = Math.random()
     .toString(20)
     .substr(2, `${len > 6 ? (len = 6) : (len = 6)}`);
-  return generatedNumber; 
- }
+  return generatedNumber;
+}
 
 app.set("view engine", "ejs");
 
@@ -22,7 +22,7 @@ app.use(
     name: "session",
     keys: ["key1", "key2"]
   })
-); 
+);
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -61,43 +61,41 @@ app.get("/hello", (req, res) => {
 });
 app.get("/urls", (req, res) => {
   // const sessionId = req.session["user_id"];
-  const sessionId = req.session["user_id"]; 
+  const sessionId = req.session["user_id"];
   console.log(sessionId);
-  if(!sessionId) return res.redirect("/register")
+  if (!sessionId) return res.redirect("/register")
   const user = users[sessionId];
-  if(!user) return res.redirect("/register");
-  const templateVars = { urls: urlDatabase, user};
+  if (!user) return res.redirect("/register");
+  const templateVars = { urls: urlDatabase, user };
   res.render("urls_index", templateVars);
 });
 // adding GET route to show the form.
 app.get("/urls/new", (req, res) => {
-  const sessionId = req.session["user_id"]; 
+  const sessionId = req.session["user_id"];
   console.log(sessionId);
-  if(!sessionId) return res.redirect("/register")
+  if (!sessionId) return res.redirect("/register")
   const user = users[sessionId];
-  if(!user) return res.redirect("/register");
-  const templateVars = {user};
+  if (!user) return res.redirect("/register");
+  const templateVars = { user };
   res.render("urls_new", templateVars);
-  
+
 });
 app.get("/urls/:id", (req, res) => {
-  const sessionId = req.session["user_id"]; 
+  const sessionId = req.session["user_id"];
   console.log(sessionId);
-  if(!sessionId) return res.redirect("/register")
+  if (!sessionId) return res.redirect("/register")
   const user = users[sessionId];
-  if(!user) return res.redirect("/register");
+  if (!user) return res.redirect("/register");
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user };
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:id", (req, res) => {
   let longURL = "null";
-  // console.log("user entered /u/:id:  " + req.params.id);
   longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
@@ -167,10 +165,10 @@ app.post("/register", (req, res) => {
   console.log(email, password);
   if (!email || !password) {
     return res.status(400).send("Please enter valid email or password");
-  } 
+  }
   if (getUserByEmail(email, users)) {
     return res.status(400).send("Email already exist");
-  } 
+  }
   const id = generateRandomString(email.length);
   users[id] = {
     id,
