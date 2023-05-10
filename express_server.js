@@ -71,7 +71,14 @@ app.get("/urls", (req, res) => {
 });
 // adding GET route to show the form.
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const sessionId = req.session["user_id"]; 
+  console.log(sessionId);
+  if(!sessionId) return res.redirect("/register")
+  const user = users[sessionId];
+  if(!user) return res.redirect("/register");
+  const templateVars = {user};
+  res.render("urls_new", templateVars);
+  
 });
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
