@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    
+
     <% if (user) { %>
       <form method="POST" action="/logout">
         <div>
@@ -21,17 +21,16 @@
         </div>
       </form>
       <% } else { %>
-        <form class="Login" action="/login" method="POST">
-          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-              <input type="text" id="name" name="email">
-              <button type="submit" class="btn btn-primary">Login</button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
 
-              <!-- <a href="/register" class="btn btn-primary">Register</a> -->
-            </div>
+            <a class="nav-item nav-link" href="/login">Login</a>
+            <a class="nav-item nav-link" href="/register">Register</a>
+
           </div>
-      </form>
-    <% } %>
+        </div>
+        </form>
+        <% } %>
 
   </nav>
 </header>
