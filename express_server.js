@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const cookieSession = require("cookie-session");
+const urlForUser = require("./helpers");
 
 const getUserByEmail = require("./helpers");
 const app = express();
@@ -24,11 +25,24 @@ app.use(
   })
 );
 
-const urlDatabase = {
+/* const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
   "54hyykn7": "https://www.icicibank.com"
 };
+ */
+
+const urlDatabase = {
+  b2xVn2: {
+    longURL: "http://www.lighthouselabs.ca",
+    userId: "userRandomID",
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userId: "user2RandomID",
+  },
+};
+
 
 const users = {
   userRandomID: {
@@ -59,56 +73,88 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
 app.get("/urls", (req, res) => {
   // const sessionId = req.session["user_id"];
   const sessionId = req.session["user_id"];
   console.log(sessionId);
-  if (!sessionId) return res.redirect("/register")
+  if (!sessionId) 
+  return res.redirect("/register")
   const user = users[sessionId];
-  if (!user) return res.redirect("/register");
+  if (!user) 
+  return res.redirect("/register");
   const templateVars = { urls: urlDatabase, user };
   res.render("urls_index", templateVars);
 });
-// adding GET route to show the form.
-app.get("/urls/new", (req, res) => {
-  const sessionId = req.session["user_id"];
-  console.log(sessionId);
-  if (!sessionId) return res.redirect("/register")
-  const user = users[sessionId];
-  if (!user) return res.redirect("/register");
-  const templateVars = { user };
-  res.render("urls_new", templateVars);
 
+
+// Handler for the "/urls/new" route
+
+app.get("/urls/new", (req, res) => {
+  // Get the user object based on the user_id stored in the session
+  const user = users[req.session["user_id"]];
+  if (!user) {
+    // Redirect to the "/login" page if the user is not logged in
+    return res.redirect("/login");
+  }
+  const templateVars = {
+    user: user,
+  };
+  // Render the "urls_new" template with the provided template variables
+  res.render("urls_new", templateVars);
 });
+
+
 app.get("/urls/:id", (req, res) => {
   const sessionId = req.session["user_id"];
   console.log(sessionId);
-  if (!sessionId) return res.redirect("/register")
+  const myUrl = urlDatabase[req.params.id];
+ if (myUrl) {
+  res.redirect(myUrl);
+  } else {
+    return res.send("URL not found");
+  }
+  /* if (!sessionId) 
+  return res.redirect("/register")
   const user = users[sessionId];
-  if (!user) return res.redirect("/register");
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user };
-  res.render("urls_show", templateVars);
+  if (!user)
+   return res.redirect("/register");
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user }; */
+  // res.render("urls_show", templateVars);
 });
 
+
+// Handler for the "/urls" POST route
 app.post("/urls", (req, res) => {
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const userId = req.session["user_id"]; // Get the user_id from the session
+  const user = users[userId]; // Get the user object based on the user_id
+  if (!user) {
+    return res.send("You must login");
+  }
+  
 });
 
 app.get("/u/:id", (req, res) => {
-  let longURL = "null";
-  longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  // Get the longURL associated with the ID
+  const myUrl = urlDatabase[req.params.id];
+  if (!myUrl) {
+    return res.send("URL not found");
+  } else {
+    res.redirect(myUrl);
+  }
 });
 
 //// POST (delete url):
 
-app.post("/urls/:id/delete", (req, res) => {
+ app.post("/urls/:id/delete", (req, res) => {
 
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 
-});
+}); 
 
+
+ 
 // POST (edit url);
 
 app.post("/urls/:id/delete", (req, res) => {
