@@ -78,11 +78,11 @@ app.get("/urls", (req, res) => {
   // const sessionId = req.session["user_id"];
   const sessionId = req.session["user_id"];
   console.log(sessionId);
-  if (!sessionId) 
-  return res.redirect("/register")
+  if (!sessionId)
+    return res.redirect("/register")
   const user = users[sessionId];
-  if (!user) 
-  return res.redirect("/register");
+  if (!user)
+    return res.redirect("/register");
   const templateVars = { urls: urlDatabase, user };
   res.render("urls_index", templateVars);
 });
@@ -106,21 +106,42 @@ app.get("/urls/new", (req, res) => {
 
 
 app.get("/urls/:id", (req, res) => {
+  //console.log("---------------- app.get(/urls/:id debug logs ---------------");
   const sessionId = req.session["user_id"];
-  console.log(sessionId);
-  const myUrl = urlDatabase[req.params.id];
- if (myUrl) {
-  res.redirect(myUrl);
-  } else {
-    return res.send("URL not found");
+  console.log("sessionId = ", sessionId);
+ 
+
+  if (!sessionId) {
+    //return res.redirect("/register");
+    return res.status(403).send("Please Login with Registered Email ID.");
   }
-  /* if (!sessionId) 
-  return res.redirect("/register")
-  const user = users[sessionId];
-  if (!user)
-   return res.redirect("/register");
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user }; */
-  // res.render("urls_show", templateVars);
+
+  //const user = users[sessionId]; 
+  const user = users[req.session["user_id"]];
+  console.log("user = ", user);
+  if (!user) {
+    console.log("Not a Registered User, please register first");
+    return res.redirect("/register");
+  }
+
+
+  if (!urlDatabase[req.params.id])
+    return res.status(403).send("URL Short ID doesn't exist in Database");
+
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user };
+
+  //todo: If the user doesn't own the URL then display proper message.
+  console.log("urlDatabase = ", urlDatabase);
+  console.log("urlDatabase[req.params.id].userId = ", urlDatabase[req.params.id].userId);
+
+
+  console.log("users = ", users);
+
+  /* if ( urlDatabase[req.params.id].userId != user.id)
+    return res.status(403).send("UserID does not own the URL");  */
+
+  res.render("urls_show", templateVars);
+
 });
 
 
@@ -131,12 +152,12 @@ app.post("/urls", (req, res) => {
   if (!user) {
     return res.send("You must login");
   }
-  
+
 });
 
 app.get("/u/:id", (req, res) => {
   // Get the longURL associated with the ID
-  const myUrl = urlDatabase[req.params.id];
+  const myUrl = urlDatabase[req.params.id].longURL;
   if (!myUrl) {
     return res.send("URL not found");
   } else {
@@ -146,18 +167,40 @@ app.get("/u/:id", (req, res) => {
 
 //// POST (delete url):
 
- app.post("/urls/:id/delete", (req, res) => {
+app.post("/urls/:id/delete", (req, res) => {
+ 
+  if (!urlDatabase[req.params.id]) {
+    // Send a message if the specified URL doesn't exist in the database
+    return res.send("URL doesn't exist");
+  }
+  const userId = req.session["user_id"]; // Get the user_id from the session
+  const user = users[userId]; // Get the user object based on the user_id
+  console.log("user = ", user);
+  console.log("userId = ", userId);
+
+  if (!user) {
+    // Send a message if the user is not logged in
+    return res.status(403).send("You must login/register first");
+  }
+  console.log("req.params.id = ",req.params.id); 
+  console.log("req.session[user_id] = ",req.session["user_id"] );
+  console.log("urlDatabase[req.params.id].userId = ",urlDatabase[req.params.id].userId );
+  
+  if (user.id !== userId) {
+    // Send a message if the user is not own the url to delete 
+    return res.send("Logged in User Not authorized to delete this URL id", req.params.id);
+  }
 
   delete urlDatabase[req.params.id];
-  res.redirect('/urls');
+  res.redirect("/urls");
 
-}); 
+});
 
 
- 
+
 // POST (edit url);
 
-app.post("/urls/:id/delete", (req, res) => {
+app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[id].longURL = req.body.newURL;
   res.redirect(`/urls`);
 });
@@ -221,7 +264,8 @@ app.post("/register", (req, res) => {
     email: email,
     password: password
   };
-  console.log(users);
+  //console.log("users = ", users);
+  //console.log("urlDatabase =", urlDatabase);
   req.session.user_id = id;
   res.redirect("/urls");
 });
