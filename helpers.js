@@ -7,4 +7,14 @@ const getUserByEmail = function (email, users) {
   return null;
 }
 
-module.exports = getUserByEmail; 
+function urlForUser(id, urlDatabase) {
+  const filteredURL = {};
+  for (const urlId in urlDatabase) {
+    if (urlDatabase[urlId].userId === id) {
+      filteredURL[urlId] = urlDatabase[urlId];
+    }
+  }
+  return filteredURL;
+}
+
+module.exports = { getUserByEmail, urlForUser}; 
