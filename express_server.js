@@ -1,9 +1,10 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const cookieSession = require("cookie-session");
-const urlForUser = require("./helpers");
+//const urlsForUser = require("./helpers");
+const bcrypt = require("bcryptjs");
 
-const getUserByEmail = require("./helpers");
+const { getUserByEmail, urlsForUser } = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -48,13 +49,14 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10), // Hashed password using bcrypt
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: bcrypt.hashSync("dishwasher-funk", 10),
   },
+  
 };
 
 app.get("/", (req, res) => {
@@ -75,15 +77,29 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  // const sessionId = req.session["user_id"];
   const sessionId = req.session["user_id"];
-  console.log(sessionId);
+  console.log("sessionId",sessionId);
+  console.log("users=", users);
+  console.log("urlDatabase = ", urlDatabase);
+
+
   if (!sessionId)
     return res.redirect("/register")
+
   const user = users[sessionId];
   if (!user)
-    return res.redirect("/register");
-  const templateVars = { urls: urlDatabase, user };
+  return res.send("You must login/register first").redirect("/register");
+
+  
+  //const user = users[sessionId];
+  //const user = users[req.session["user_id"]];
+  // Get the URLs associated with the current user   
+  //const templateVars = { urls: urlDatabase, user };
+
+  const templateVars = {
+    urls: urlsForUser(req.session["user_id"], urlDatabase), user
+   };
+
   res.render("urls_index", templateVars);
 });
 
@@ -216,7 +232,7 @@ app.post("/login", (req, res) => {
     // Send a message if the email is not found
     return res.status(403).send("Email not found");
   }
-  if (password !== user.password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     // Send a message if the password is incorrect
     return res.status(403).send("Incorrect password");
   }
@@ -255,6 +271,7 @@ app.post("/register", (req, res) => {
   if (!email || !password) {
     return res.status(400).send("Please enter valid email or password");
   }
+  console.log(getUserByEmail(email, users));
   if (getUserByEmail(email, users)) {
     return res.status(400).send("Email already exist");
   }
@@ -262,7 +279,7 @@ app.post("/register", (req, res) => {
   users[id] = {
     id,
     email: email,
-    password: password
+    password: bcrypt.hashSync(password, 10), // Hash the password before storing
   };
   //console.log("users = ", users);
   //console.log("urlDatabase =", urlDatabase);
