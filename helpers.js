@@ -1,13 +1,9 @@
-
-
-
 function getUserByEmail(email, users) {
   for (const userId in users) {
     console.log(users);
     if (users[userId].email === email) {
       console.log("helper function");
       return users[userId];
-      //return "helper function";
     }
   }
   
@@ -26,5 +22,4 @@ function urlsForUser(id, urlDatabase) {
 }
 
 module.exports = { getUserByEmail, urlsForUser }; 
-//module.exports = getUserByEmail;
-//module.exports = urlsForUser;
+
