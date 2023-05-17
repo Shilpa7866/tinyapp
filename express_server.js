@@ -22,7 +22,8 @@ app.use(cookieParser());
 app.use(
   cookieSession({
     name: "session",
-    keys: ["key1", "key2"]
+    keys: ["key1", "key2"],
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   })
 );
 
@@ -163,7 +164,8 @@ app.get("/urls/:id", (req, res) => {
 
 // Handler for the "/urls" POST route
 app.post("/urls", (req, res) => {
-  const userId = req.session["user_id"]; // Get the user_id from the session
+  //const userId = req.session["user_id"]; // Get the user_id from the session
+  const userId = req.session.user_id;
   const user = users[userId]; // Get the user object based on the user_id
   if (!user) {
     return res.send("You must login");
