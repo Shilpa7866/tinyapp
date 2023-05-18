@@ -123,7 +123,6 @@ app.get("/urls/new", (req, res) => {
 
 
 app.get("/urls/:id", (req, res) => {
-  //console.log("---------------- app.get(/urls/:id debug logs ---------------");
   const sessionId = req.session["user_id"];
   console.log("sessionId = ", sessionId);
  
@@ -219,7 +218,7 @@ app.post("/urls/:id/delete", (req, res) => {
 // POST (edit url);
 
 app.post("/urls/:id/edit", (req, res) => {
-  urlDatabase[id].longURL = req.body.newURL;
+  urlDatabase[req.params.id].longURL = req.body.newURL;
   res.redirect(`/urls`);
 });
 
