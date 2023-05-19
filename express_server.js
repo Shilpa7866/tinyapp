@@ -90,13 +90,6 @@ app.get("/urls", (req, res) => {
   const user = users[sessionId];
   if (!user)
   return res.send("You must login/register first").redirect("/register");
-
-  
-  //const user = users[sessionId];
-  //const user = users[req.session["user_id"]];
-  // Get the URLs associated with the current user   
-  //const templateVars = { urls: urlDatabase, user };
-
   const templateVars = {
     urls: urlsForUser(req.session["user_id"], urlDatabase), user
    };
@@ -153,23 +146,25 @@ app.get("/urls/:id", (req, res) => {
 
   console.log("users = ", users);
 
-  /* if ( urlDatabase[req.params.id].userId != user.id)
-    return res.status(403).send("UserID does not own the URL");  */
-
   res.render("urls_show", templateVars);
 
 });
 
 
 // Handler for the "/urls" POST route
-app.post("/urls", (req, res) => {
-  //const userId = req.session["user_id"]; // Get the user_id from the session
-  const userId = req.session.user_id;
-  const user = users[userId]; // Get the user object based on the user_id
-  if (!user) {
-    return res.send("You must login");
-  }
 
+
+app.post("/urls", (req, res) => {
+  if (req.session.user_id) {
+    const id = generateRandomString();
+    urlDatabase[id] = {
+      longURL: req.body.longURL,
+      userId: req.session.user_id
+    };
+    res.redirect(`/urls/${id}`);
+  } else {
+    res.status(401).send("Please Login...<h3><a href= '/Login'> login </a></h3>");
+  }
 });
 
 app.get("/u/:id", (req, res) => {
@@ -213,13 +208,20 @@ app.post("/urls/:id/delete", (req, res) => {
 
 });
 
-
-
-// POST (edit url);
-
-app.post("/urls/:id/edit", (req, res) => {
-  urlDatabase[req.params.id].longURL = req.body.newURL;
-  res.redirect(`/urls`);
+// POST (edit url): updates longURL if url belongs to user
+app.post("/urls/:id", (req, res) => {
+  if (req.session.user_id) {
+    const sessionId = req.session.user_id;
+    const id = req.params.id;
+    if (sessionId  && sessionId === urlDatabase[id].userId) {
+      urlDatabase[id].longURL = req.body.newURL;
+      res.redirect(`/urls`);
+    } else {
+      res.status(401).send("You do not have authorization to edit...<h3><a href= '/Login'> login </a></h3>");
+    }
+  } else {
+    res.redirect('/login');
+  }
 });
 
 //POST (Login)
