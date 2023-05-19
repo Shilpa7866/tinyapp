@@ -10,6 +10,12 @@ function getUserByEmail(email, users) {
   return null;
 }
 
+function generateRandomString(len) {
+  let generatedNumber = Math.random()
+    .toString(20)
+    .substr(2, `${len > 6 ? (len = 6) : (len = 6)}`);
+  return generatedNumber;
+}
 
 function urlsForUser(id, urlDatabase) {
   const filteredURL = {};
@@ -21,5 +27,5 @@ function urlsForUser(id, urlDatabase) {
   return filteredURL;
 }
 
-module.exports = { getUserByEmail, urlsForUser }; 
+module.exports = { getUserByEmail, urlsForUser, generateRandomString }; 
 
