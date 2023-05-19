@@ -1,19 +1,11 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const cookieSession = require("cookie-session");
-//const urlsForUser = require("./helpers");
 const bcrypt = require("bcryptjs");
+const { getUserByEmail, urlsForUser, generateRandomString } = require("./helpers");
 
-const { getUserByEmail, urlsForUser } = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
-
-function generateRandomString(len) {
-  let generatedNumber = Math.random()
-    .toString(20)
-    .substr(2, `${len > 6 ? (len = 6) : (len = 6)}`);
-  return generatedNumber;
-}
 
 app.set("view engine", "ejs");
 
@@ -26,13 +18,6 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   })
 );
-
-/* const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-  "54hyykn7": "https://www.icicibank.com"
-};
- */
 
 const urlDatabase = {
   b2xVn2: {
@@ -57,7 +42,7 @@ const users = {
     email: "user2@example.com",
     password: bcrypt.hashSync("dishwasher-funk", 10),
   },
-  
+
 };
 
 app.get("/", (req, res) => {
@@ -79,26 +64,23 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const sessionId = req.session["user_id"];
-  console.log("sessionId",sessionId);
+  console.log("sessionId", sessionId);
   console.log("users=", users);
   console.log("urlDatabase = ", urlDatabase);
-
-
+  
   if (!sessionId)
     return res.redirect("/register")
 
   const user = users[sessionId];
   if (!user)
-  return res.send("You must login/register first").redirect("/register");
+    return res.send("You must login/register first").redirect("/register");
   const templateVars = {
     urls: urlsForUser(req.session["user_id"], urlDatabase), user
-   };
+  };
 
   res.render("urls_index", templateVars);
 });
 
-
-// Handler for the "/urls/new" route
 
 app.get("/urls/new", (req, res) => {
   // Get the user object based on the user_id stored in the session
@@ -118,14 +100,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const sessionId = req.session["user_id"];
   console.log("sessionId = ", sessionId);
- 
 
-  if (!sessionId) {
-    //return res.redirect("/register");
-    return res.status(403).send("Please Login with Registered Email ID.");
-  }
-
-  //const user = users[sessionId]; 
   const user = users[req.session["user_id"]];
   console.log("user = ", user);
   if (!user) {
@@ -133,13 +108,20 @@ app.get("/urls/:id", (req, res) => {
     return res.redirect("/register");
   }
 
+  if (!sessionId) {
+    return res.status(403).send("Please Login with Registered Email ID.");
+  }
+
+  if (urlDatabase[req.params.id].userId !== req.session["user_id"]) {
+    return res.send("Not authorized to access this page");
+  }
 
   if (!urlDatabase[req.params.id])
     return res.status(403).send("URL Short ID doesn't exist in Database");
 
+
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user };
 
-  //todo: If the user doesn't own the URL then display proper message.
   console.log("urlDatabase = ", urlDatabase);
   console.log("urlDatabase[req.params.id].userId = ", urlDatabase[req.params.id].userId);
 
@@ -152,7 +134,6 @@ app.get("/urls/:id", (req, res) => {
 
 
 // Handler for the "/urls" POST route
-
 
 app.post("/urls", (req, res) => {
   if (req.session.user_id) {
@@ -177,10 +158,10 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
-//// POST (delete url):
+// POST (delete url):
 
 app.post("/urls/:id/delete", (req, res) => {
- 
+
   if (!urlDatabase[req.params.id]) {
     // Send a message if the specified URL doesn't exist in the database
     return res.send("URL doesn't exist");
@@ -194,10 +175,10 @@ app.post("/urls/:id/delete", (req, res) => {
     // Send a message if the user is not logged in
     return res.status(403).send("You must login/register first");
   }
-  console.log("req.params.id = ",req.params.id); 
-  console.log("req.session[user_id] = ",req.session["user_id"] );
-  console.log("urlDatabase[req.params.id].userId = ",urlDatabase[req.params.id].userId );
-  
+  console.log("req.params.id = ", req.params.id);
+  console.log("req.session[user_id] = ", req.session["user_id"]);
+  console.log("urlDatabase[req.params.id].userId = ", urlDatabase[req.params.id].userId);
+
   if (user.id !== userId) {
     // Send a message if the user is not own the url to delete 
     return res.send("Logged in User Not authorized to delete this URL id", req.params.id);
@@ -208,12 +189,13 @@ app.post("/urls/:id/delete", (req, res) => {
 
 });
 
+
 // POST (edit url): updates longURL if url belongs to user
 app.post("/urls/:id", (req, res) => {
   if (req.session.user_id) {
     const sessionId = req.session.user_id;
     const id = req.params.id;
-    if (sessionId  && sessionId === urlDatabase[id].userId) {
+    if (sessionId && sessionId === urlDatabase[id].userId) {
       urlDatabase[id].longURL = req.body.newURL;
       res.redirect(`/urls`);
     } else {
@@ -223,6 +205,7 @@ app.post("/urls/:id", (req, res) => {
     res.redirect('/login');
   }
 });
+
 
 //POST (Login)
 
@@ -284,11 +267,10 @@ app.post("/register", (req, res) => {
     email: email,
     password: bcrypt.hashSync(password, 10), // Hash the password before storing
   };
-  //console.log("users = ", users);
-  //console.log("urlDatabase =", urlDatabase);
   req.session.user_id = id;
   res.redirect("/urls");
 });
+
 
 //GET Login
 app.get("/login", (req, res) => {
