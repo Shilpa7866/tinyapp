@@ -29,6 +29,6 @@ To run the TinyApp application locally, please follow these steps:
 
 * To access the application:
 
-* Open web browser and visit http://localhost:8080.
+  Open web browser and visit http://localhost:8080.
 
 * Test the project using the npm run test command.
